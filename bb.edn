@@ -1,0 +1,4 @@
+{:paths ["src"]
+ :tasks {:requires ([filler.init :as init])
+         init (init/init)
+         clear (init/clear)}}
