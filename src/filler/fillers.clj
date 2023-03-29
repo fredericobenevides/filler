@@ -43,7 +43,7 @@
   (let [content (slurp path)]
     (when (templates/exists-tags? content)
       (println "\n-> Updating the file" path "to use environment variables")
-      (spit path (templates/replace-multiple-tags content (templates/create-tag-data utils/load-env-value (templates/read-tags content)))))))
+      (spit path (templates/replace-multiple-tags content (templates/create-tag-data utils/get-env-value (templates/read-tags content)))))))
 
 (defn run-filler
   {:org.babashka/cli {:coerce {:names [:string]}}}

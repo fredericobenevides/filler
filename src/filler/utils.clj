@@ -4,12 +4,20 @@
 
 (def CONFIG-LOCATION (.toString (fs/expand-home (str "~/" ".filler.edn"))))
 
-(defn create-config [path]
+(defn create-config
+  "Creates the config file inside the CONFIG_LOCATION containing a key
+   :path that points to a external path which allows the filler to
+   load content from this path"
+  [path]
   (fs/create-file CONFIG-LOCATION)
   (spit CONFIG-LOCATION {:path path}))
 
-(defn read-config-file [path]
+(defn read-config-file
+  "Returns the content of file config configured using edn"
+  [path]
   (edn/read-string (slurp path)))
 
-(defn load-env-value [variable]
-  (System/getenv variable))
+(defn get-env-value
+  "Returns an environment value based on the name"
+  [name]
+  (System/getenv name))
