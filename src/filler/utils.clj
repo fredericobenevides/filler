@@ -2,7 +2,7 @@
   (:require [babashka.fs :as fs]
             [clojure.edn :as edn]))
 
-(def CONFIG-LOCATION (.toString (fs/expand-home (str "~/" ".filler.edn"))))
+(def CONFIG-LOCATION (str (fs/expand-home "~/.filler.edn")))
 
 (defn create-config
   "Creates the config file inside the CONFIG_LOCATION containing a key
