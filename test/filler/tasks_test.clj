@@ -1,9 +1,9 @@
-(ns filler.init-test
+(ns filler.tasks-test
   (:require [babashka.fs :as fs]
             [clojure.edn :as edn]
             [clojure.string :as string]
             [clojure.test :refer [deftest is testing]]
-            [filler.init :as init]
+            [filler.tasks :as tasks]
             [filler.utils :as utils]))
 
 (defn temp-dir []
@@ -16,13 +16,13 @@
           file (fs/file tmp-dir "file.edn")
           _ (spit file {:key "value"})]
       (with-redefs [utils/CONFIG-LOCATION file]
-        (let [output (with-out-str (init/init))]
+        (let [output (with-out-str (tasks/init))]
           (is (string/includes? output "already exists"))))))
   (testing "file doesn't exist in the system"
     (let [tmp-dir (temp-dir)
           file (fs/file tmp-dir "file.edn")]
       (with-redefs [utils/CONFIG-LOCATION file]
-        (with-in-str "external-path" (init/init))
+        (with-in-str "external-path" (tasks/init))
         (is (fs/exists? (str file)))
         (is (= "external-path"
                (-> (str file)
@@ -35,13 +35,13 @@
     (let [tmp-dir (temp-dir)
           file (fs/file tmp-dir "file.edn")]
       (with-redefs [utils/CONFIG-LOCATION file]
-        (let [output (with-out-str (init/clear))]
+        (let [output (with-out-str (tasks/clear))]
           (is (string/includes? output "does not exists"))))))
   (testing "file exist in the system"
     (let [tmp-dir (temp-dir)
           file (fs/file tmp-dir "file.edn")
           _ (spit file {:key "value"})]
       (with-redefs [utils/CONFIG-LOCATION file]
-        (let [output (with-out-str (init/clear))]
+        (let [output (with-out-str (tasks/clear))]
           (is (not (fs/exists? file)))
           (is (string/includes? output "Removing filler")))))))

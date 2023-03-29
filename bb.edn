@@ -1,9 +1,9 @@
 {:paths ["src"]
- :tasks {:requires ([filler.init :as init]
+ :tasks {:requires ([filler.tasks :as tasks]
                     [filler.fillers :as fillers])
-         init (init/init)
-         clear (init/clear)
-         fillers (fillers/list)
-         fill-with (exec 'filler.fillers/run-filler)}
+         init (tasks/init)
+         clear (tasks/clear)
+         fillers (tasks/list)
+         fill-with (exec 'filler.tasks/run-filler)}
  }
  
