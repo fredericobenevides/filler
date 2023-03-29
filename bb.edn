@@ -3,4 +3,5 @@
                     [filler.fillers :as fillers])
          init (init/init)
          clear (init/clear)
-         fillers (fillers/list)}}
+         fillers (fillers/list)
+         fill-with (exec 'filler.fillers/run-filler)}}
