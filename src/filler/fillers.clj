@@ -42,6 +42,13 @@
 (defn- load-fillers-by-name [fillers name]
   (first (filter (comp #{name} :name) fillers)))
 
+
+(defn update-file-with-env-vars [path]
+  (let [content (slurp path)]
+    (when (utils/exists-variables? content)
+      (println "\n-> Updating the file" path "to use environment variables")
+      (spit path (utils/replace-variables content (utils/load-vars-and-values content))))))
+
 (defn run-filler
   {:org.babashka/cli {:coerce {:names [:string]}}}
   [{names :names}]
@@ -55,4 +62,5 @@
               src (str path fs/file-separator (:src file))
               dst (str (fs/expand-home (:dst file)))]
           (println "-> Copying file \nfrom:" src "\nto:" dst)
-          (fs/copy src dst {:replace-existing true}))) )))
+          (fs/copy src dst {:replace-existing true})
+          (update-file-with-env-vars dst))))))
