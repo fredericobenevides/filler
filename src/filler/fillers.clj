@@ -1,5 +1,6 @@
 (ns filler.fillers
   (:require [babashka.fs :as fs]
+            [filler.templates :as templates]
             [filler.utils :as utils]))
 
 (defn- file-to-filler [file]
@@ -35,19 +36,14 @@
       (newline)
       (print-filler-data filler))))
 
-(defn compare-filler-by-name [filler name]
-  (println "comp" filler name)
-  (when (= (:name filler) name) filler))
-
 (defn- load-fillers-by-name [fillers name]
   (first (filter (comp #{name} :name) fillers)))
 
-
 (defn update-file-with-env-vars [path]
   (let [content (slurp path)]
-    (when (utils/exists-variables? content)
+    (when (templates/exists-tags? content)
       (println "\n-> Updating the file" path "to use environment variables")
-      (spit path (utils/replace-variables content (utils/load-vars-and-values content))))))
+      (spit path (templates/replace-multiple-tags content (templates/create-tag-data utils/load-env-value (templates/read-tags content)))))))
 
 (defn run-filler
   {:org.babashka/cli {:coerce {:names [:string]}}}
@@ -63,4 +59,5 @@
               dst (str (fs/expand-home (:dst file)))]
           (println "-> Copying file \nfrom:" src "\nto:" dst)
           (fs/copy src dst {:replace-existing true})
-          (update-file-with-env-vars dst))))))
+          ;; (update-file-with-env-vars dst)
+          )))))
