@@ -1,24 +1,18 @@
 (ns filler.utils-test
-  (:require [babashka.fs :as fs]
-            [clojure.test :refer [deftest is]]
+  (:require [clojure.test :refer [deftest is]]
             [clojure.edn :as edn]
-            [filler.utils :as utils]))
-
-(defn temp-dir []
-  (-> (fs/create-temp-dir)
-      (fs/delete-on-exit)))
+            [filler.utils :as utils]
+            [helpers]))
 
 (deftest create-config-test
-  (let [tmp-dir (temp-dir)
-        file (fs/file tmp-dir "file.edn")]
+  (let [file (helpers/create-file "file.edn")]
     (with-redefs [utils/CONFIG-LOCATION file]
       (utils/create-config "external_project")
       (is (= "external_project"
              (:path (edn/read-string (slurp file))))))))
 
 (deftest read-config-file-test
-  (let [tmp-dir (temp-dir)
-        file (fs/file tmp-dir "file.end")
+  (let [file (helpers/create-file "file.edn")
         _ (spit file {:key "value"})]
     (is (= "value" (:key (utils/read-config-file file))))))
 

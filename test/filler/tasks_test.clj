@@ -4,7 +4,8 @@
             [clojure.string :as string]
             [clojure.test :refer [deftest is testing]]
             [filler.tasks :as tasks]
-            [filler.utils :as utils]))
+            [filler.utils :as utils]
+            [helpers]))
 
 (defn temp-dir []
   (-> (fs/create-temp-dir)
@@ -12,8 +13,7 @@
 
 (deftest init-test
   (testing "file already exist in the system"
-    (let [tmp-dir (temp-dir)
-          file (fs/file tmp-dir "file.edn")
+    (let [file (helpers/create-file "file.end")
           _ (spit file {:key "value"})]
       (with-redefs [utils/CONFIG-LOCATION file]
         (let [output (with-out-str (tasks/init))]
@@ -32,8 +32,7 @@
 
 (deftest clear-test
   (testing "file doesn't exist in the system"
-    (let [tmp-dir (temp-dir)
-          file (fs/file tmp-dir "file.edn")]
+    (let [file (helpers/create-file "file.edn")]
       (with-redefs [utils/CONFIG-LOCATION file]
         (let [output (with-out-str (tasks/clear))]
           (is (string/includes? output "does not exists"))))))
