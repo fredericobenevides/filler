@@ -13,9 +13,14 @@
   (spit CONFIG-LOCATION {:path path}))
 
 (defn read-config-file
-  "Returns the content of file config configured using edn"
+  "Returns the content of the file configured using edn"
   [path]
   (edn/read-string (slurp path)))
+
+(defn find-all-config-files
+  "Returns all edn config files found in the path recursively"
+  [path]
+  (map (comp read-config-file str) (fs/glob path "**/*.edn")))
 
 (defn get-env-value
   "Returns an environment value based on the name"
