@@ -13,7 +13,7 @@
 
 (deftest init-test
   (testing "file already exist in the system"
-    (let [file (helpers/create-file "file.end")
+    (let [file (fs/file (helpers/temp-dir) "file.end")
           _ (spit file {:key "value"})]
       (with-redefs [utils/CONFIG-LOCATION file]
         (let [output (with-out-str (tasks/init))]
@@ -32,7 +32,7 @@
 
 (deftest clear-test
   (testing "file doesn't exist in the system"
-    (let [file (helpers/create-file "file.edn")]
+    (let [file (fs/file (helpers/temp-dir) "file.edn")]
       (with-redefs [utils/CONFIG-LOCATION file]
         (let [output (with-out-str (tasks/clear))]
           (is (string/includes? output "does not exists"))))))

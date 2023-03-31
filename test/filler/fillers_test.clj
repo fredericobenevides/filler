@@ -55,7 +55,7 @@
 
 (deftest find-all-fillers-test
   (let [fillers-dir (:fillers-dir @fixtures-config)
-        config-file (helpers/create-file "config.edn")
+        config-file (fs/file (helpers/temp-dir) "config.edn")
         _ (spit config-file {:path fillers-dir})]
     (with-redefs [utils/CONFIG-LOCATION config-file]
       (let [fillers (fillers/find-all-fillers)]
