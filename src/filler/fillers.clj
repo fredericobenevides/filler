@@ -55,7 +55,9 @@
   [filler]
   (let [files (:files filler)]
     (doseq [file files]
-      (let [src-path (str (fs/file (fs/parent (:path filler)) (:src file)))
+      (let [file-name (str (fs/file-name (:src file)))
+            parent-src (str (fs/parent (:src file)))
+            src-path (str (fs/file parent-src file-name))
             dst-path (str (fs/expand-home (:dst file)))
             parent-dst-path (str (fs/parent dst-path))]
         (if (fs/exists? src-path)
