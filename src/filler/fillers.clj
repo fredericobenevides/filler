@@ -48,14 +48,18 @@
   [filler]
   (let [files (:files filler)]
     (doseq [file files]
-      (let [src-path (str (fs/expand-home (:src file)))
-            dst-path (:dst file)
+      (let [src-path (str (fs/file (fs/parent (:path filler)) (:src file)))
+            dst-path (str (fs/expand-home (:dst file)))
             parent-dst-path (str (fs/parent dst-path))]
-        (when (not (fs/exists? src-path))
-          (println "File not found to be copied:" src-path))
-        (println "Copying files from" src-path "to" dst-path)
-        (fs/create-dirs (fs/file parent-dst-path))
-        (fs/copy src-path dst-path [:replace-existing :copy-attributes])))))
+        (if (fs/exists? src-path)
+          (do
+            (println "Copying files")
+            (println "from:" src-path)
+            (println "to:" dst-path)
+            (fs/create-dirs (fs/file parent-dst-path))
+            (fs/copy src-path dst-path {:replace-existing true :copy-attributes true} ))
+          (println "File not found to be copied:" src-path)
+          )))))
 
 (defn update-file-with-env-vars [path]
   (let [content (slurp path)]

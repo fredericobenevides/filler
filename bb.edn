@@ -3,7 +3,7 @@
                     [filler.fillers :as fillers])
          init (tasks/init)
          clear (tasks/clear)
-         fillers (tasks/list)
-         fill-with (exec 'filler.tasks/run-filler)}
+         list (tasks/list)
+         proccess (exec 'filler.tasks/run-filler)}
  }
  

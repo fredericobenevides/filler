@@ -44,8 +44,9 @@
   {:org.babashka/cli {:coerce {:names [:string]}}}
   [{names :names}]
   (doseq [name names]
-    (let [filler (fillers/find-fillers-by-name (fillers/find-all-fillers) name)]
+    (doseq [filler (fillers/find-fillers-by-name (fillers/find-all-fillers) name)]
       (newline)
       (fillers/print-filler filler)
       (newline)
-      (fillers/execute-filler filler))))
+      (fillers/execute-filler filler)
+      )))
