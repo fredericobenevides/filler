@@ -27,36 +27,36 @@
   (dotimes [n 2]
     (let [fillers-dir (:fillers-dir @fixtures-config)
           filler-dir (fs/file fillers-dir (str "name" n))
-          src (str (fs/file "{{filler_dir}}" "src" "file.txt"))
-          dst (str (fs/file filler-dir "dst" "file.txt"))]
+          from (str (fs/file "{{filler_dir}}" "from" "file.txt"))
+          to (str (fs/file filler-dir "to" "file.txt"))]
       (swap! fillers conj {:name (str "name" n)
                            :description (str "description" n)
-                           :files [{:src src
-                                    :dst dst}]}))))
+                           :files [{:from from
+                                    :to to}]}))))
 (defn spit-fillers-config []
   (doseq [filler @fillers]
     (let [files (:files filler)
-          dst (:dst (first files))
-          filler-dir (str (fs/parent (fs/parent dst)))
+          to (:to (first files))
+          filler-dir (str (fs/parent (fs/parent to)))
           config-path (str (fs/file filler-dir "config.edn"))]
       (fs/create-dirs filler-dir)
       (spit config-path filler))))
 
-(defn spit-fillers-src-file []
+(defn spit-fillers-from-file []
   (doseq [filler @fillers]
     (let [files (:files filler)
-          dst (:dst (first files))
-          filler-dir (str (fs/parent (fs/parent dst)))
-          file-dir-src (str (fs/file filler-dir "src"))
-          file-path (str (fs/file file-dir-src "file.txt"))]
-      (fs/create-dirs file-dir-src)
+          to (:to (first files))
+          filler-dir (str (fs/parent (fs/parent to)))
+          file-dir-from (str (fs/file filler-dir "from"))
+          file-path (str (fs/file file-dir-from "file.txt"))]
+      (fs/create-dirs file-dir-from)
       (spit file-path "content"))))
 
 (defn init-fixtures []
   (init-fixtures-config)
   (init-fillers-config)
   (spit-fillers-config)
-  (spit-fillers-src-file))
+  (spit-fillers-from-file))
 
 (init-fixtures)
 
@@ -67,7 +67,7 @@
     (is (= "name0" (:name filler)))
     (is (= "description0" (:description filler)))
     (is (= "{{filler_dir}}" (:path filler)))
-    (is (string/includes? (:src (first (:files filler))) "file.txt"))))
+    (is (string/includes? (:from (first (:files filler))) "file.txt"))))
 
 (deftest find-all-fillers-config
   (let [fillers-dir (:fillers-dir @fixtures-config)
@@ -97,12 +97,12 @@
   (let [config-file (:config-file @fixtures-config)
         config1 (first @fillers)
         config2 (first @fillers)
-        dst1 (:dst (first (:files config1)))
-        dst2 (:dst (first (:files config2)))
+        to1 (:to (first (:files config1)))
+        to2 (:to (first (:files config2)))
         ]
     (with-redefs [utils/CONFIG-LOCATION config-file]
       (let [fillers (fillers/find-all-fillers)]
         (fillers/execute-filler (first fillers))
         (fillers/execute-filler (second fillers))
-        (is (fs/exists? dst1))
-        (is (fs/exists? dst2))))))
+        (is (fs/exists? to1))
+        (is (fs/exists? to2))))))

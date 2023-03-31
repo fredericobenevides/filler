@@ -1,4 +1,4 @@
 {:name "env"
  :description "Example of filler showing the use of environment"
- :files [{:src "files/README.txt"
-          :dst "/tmp/fillers/dst_files/env/README.txt"}]}
+ :files [{:from "files/README.txt"
+          :to "/tmp/fillers/dst_files/env/README.txt"}]}

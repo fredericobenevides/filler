@@ -1,4 +1,4 @@
 {:name "foo"
  :description "Example of filler"
- :files [{:src "files/README.txt"
-          :dst "/tmp/fillers/dst_files/foo/README.txt"}]}
+ :files [{:from "files/README.txt"
+          :to "/tmp/fillers/dst_files/foo/README.txt"}]}

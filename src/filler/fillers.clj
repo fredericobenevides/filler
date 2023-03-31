@@ -11,8 +11,8 @@
                 :path path
                 :description description}
         files (map (fn [f]
-                     {:src (utils/create-path (:src f) "filler_dir" path)
-                      :dst (utils/create-path (:dst f)) "filler_dir" path})
+                     {:from (utils/create-path (:from f) "filler_dir" path)
+                      :to (utils/create-path (:to f)) "filler_dir" path})
                    files)]
     (merge filler {:files files})))
 
@@ -24,10 +24,10 @@
   (println "path:" (:path filler))
   (println "file info:")
   (doseq [file (:files filler)]
-    (let [src (:src file)
-          dst (:dst file)]
-      (println "  source:" src)
-      (println "  destination:" dst))))
+    (let [from (:from file)
+          to (:to file)]
+      (println "  source:" from)
+      (println "  destination:" to))))
 
 (defn find-all-fillers-config
   "Returns all edn config files found in the path recursively"
@@ -62,17 +62,17 @@
   [filler]
   (let [files (:files filler)]
     (doseq [file files]
-      (let [src-path (:src file)
-            dst-path (:dst file)
-            dst-parent-path (str (fs/parent dst-path))]
-        (if (fs/exists? src-path)
+      (let [from-path (:from file)
+            to-path (:to file)
+            to-parent-path (str (fs/parent to-path))]
+        (if (fs/exists? from-path)
           (do
             (println "-> Copying files")
-            (println "  from:" src-path)
-            (println "  to:" dst-path)
-            (fs/create-dirs (fs/file dst-parent-path))
-            (fs/copy src-path dst-path {:replace-existing true :copy-attributes true})
-            (update-file-with-env-vars dst-path))
-          (println "File not found to be copied:" src-path))))))
+            (println "  from:" from-path)
+            (println "  to:" to-path)
+            (fs/create-dirs (fs/file to-parent-path))
+            (fs/copy from-path to-path {:replace-existing true :copy-attributes true})
+            (update-file-with-env-vars to-path))
+          (println "File not found to be copied:" from-path))))))
 
 
