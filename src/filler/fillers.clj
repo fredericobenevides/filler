@@ -17,7 +17,7 @@
   (println "#" (:description filler))
   (println "name:" (:name filler))
   (println "path:" (:path filler))
-  (println "file data")
+  (println "file info:")
   (doseq [file (:files filler)]
     (let [path (:path filler)
           src (str path fs/file-separator (:src file))
@@ -43,7 +43,10 @@
   [fillers name]
   (filter #(= name (:name %)) fillers))
 
-(defn- update-file-with-env-vars [path]
+(defn- update-file-with-env-vars
+  "Update a file that is using a template tag to use the values from the
+  environment"
+  [path]
   (let [content (slurp path)]
     (when (templates/exists-tags? content)
       (println "\n-> Updating the file to use environment variables")
@@ -55,17 +58,17 @@
   [filler]
   (let [files (:files filler)]
     (doseq [file files]
-      (let [file-name (str (fs/file-name (:src file)))
-            parent-src (str (fs/parent (:src file)))
-            src-path (str (fs/file parent-src file-name))
+      (let [src-file-name (str (fs/file-name (:src file)))
+            src-parent-path (str (fs/parent (:src file)))
+            src-path (str (fs/file src-parent-path src-file-name))
             dst-path (str (fs/expand-home (:dst file)))
-            parent-dst-path (str (fs/parent dst-path))]
+            dst-parent-path (str (fs/parent dst-path))]
         (if (fs/exists? src-path)
           (do
             (println "-> Copying files")
             (println "  from:" src-path)
             (println "  to:" dst-path)
-            (fs/create-dirs (fs/file parent-dst-path))
+            (fs/create-dirs (fs/file dst-parent-path))
             (fs/copy src-path dst-path {:replace-existing true :copy-attributes true})
             (update-file-with-env-vars dst-path))
           (println "File not found to be copied:" src-path))))))
