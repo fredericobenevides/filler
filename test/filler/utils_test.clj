@@ -22,3 +22,18 @@
     (is (not (= nil (utils/get-env-value "HOME")))))
   (testing "value doesn't exists"
     (is (= nil (utils/get-env-value "ANYOTHERVALUE")))))
+
+(deftest create-path
+  (testing "full path"
+    (is (= "/opt/filler/file.txt" 
+           (utils/create-path "/opt/filler/file.txt"))))
+  (testing "expand home"
+    (is (= (str (fs/expand-home "~/filler/file.txt"))
+           (utils/create-path "~/filler/file.txt"))))
+  (testing "create path with tags"
+    (testing "with variables"
+      (is (= (str (fs/expand-home "/opt/filler/file.txt"))
+             (utils/create-path "{{filler_dir}}/filler/file.txt" "filler_dir" "/opt"))))
+    (testing "without variables"
+      (is (= (str (fs/expand-home "/opt/filler/file.txt"))
+             (utils/create-path "/opt/filler/file.txt" "filler_dir" "/opt"))))))

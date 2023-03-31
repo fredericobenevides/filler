@@ -1,6 +1,7 @@
 (ns filler.utils
   (:require [babashka.fs :as fs]
-            [clojure.edn :as edn]))
+            [clojure.edn :as edn]
+            [filler.templates :as templates]))
 
 (def CONFIG-LOCATION (str (fs/expand-home "~/.filler.edn")))
 
@@ -26,3 +27,7 @@
   "Returns an environment value based on the name"
   [name]
   (System/getenv name))
+
+(defn create-path
+  ([path] (str (fs/expand-home path)))
+  ([path tag value] (templates/replace-tag-with-value (create-path path) tag value)))
