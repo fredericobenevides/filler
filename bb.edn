@@ -7,7 +7,7 @@
                 :task (tasks/clear)}
          list {:doc "List all the fillers found in the path configured in the init task"
                :task (tasks/list)}
-         proccess {:doc "Proccess a filler using its name"
+         process {:doc "Process a filler using its name"
                    :task (exec 'filler.tasks/run-filler)}
          examples {:doc "Reset your configured filler to use the examples structurep"
                    :task (tasks/examples)}}
