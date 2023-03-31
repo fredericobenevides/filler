@@ -1,6 +1,6 @@
 (ns filler.utils-test
   (:require [babashka.fs :as fs]
-            [clojure.test :refer [deftest is]]
+            [clojure.test :refer [deftest is testing]]
             [clojure.edn :as edn]
             [filler.utils :as utils]
             [helpers]))
@@ -18,4 +18,7 @@
     (is (= "value" (:key (utils/read-config-file file))))))
 
 (deftest get-env-value-test
-  (is (not (= nil (utils/get-env-value "HOME")))))
+  (testing "value exists"
+    (is (not (= nil (utils/get-env-value "HOME")))))
+  (testing "value doesn't exists"
+    (is (= nil (utils/get-env-value "ANYOTHERVALUE")))))

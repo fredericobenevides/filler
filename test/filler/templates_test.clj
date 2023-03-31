@@ -40,4 +40,9 @@
     (is (= "Hello World and {{FILLER_TAG_3}}"
            (templates/replace-multiple-tags "{{FILLER_TAG_1}} {{FILLER_TAG_2}} and {{FILLER_TAG_3}}"
                                             [{:tag "FILLER_TAG_1" :value "Hello"}
-                                             {:tag "FILLER_TAG_2" :value "World"}])))))
+                                             {:tag "FILLER_TAG_2" :value "World"}]))))
+  (testing "Empty value"
+    (is (= "Hello {{FILLER_TAG_2}} and {{FILLER_TAG_3}}"
+           (templates/replace-multiple-tags "{{FILLER_TAG_1}} {{FILLER_TAG_2}} and {{FILLER_TAG_3}}"
+                                            [{:tag "FILLER_TAG_1" :value "Hello"}
+                                             {:tag "FILLER_TAG_2" :value ""}])))))

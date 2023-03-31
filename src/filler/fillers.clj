@@ -43,6 +43,13 @@
   [fillers name]
   (filter #(= name (:name %)) fillers))
 
+(defn- update-file-with-env-vars [path]
+  (let [content (slurp path)]
+    (when (templates/exists-tags? content)
+      (println "\n-> Updating the file to use environment variables")
+      (println "  file:" path)
+      (spit path (templates/replace-multiple-tags content (templates/create-tag-data utils/get-env-value (templates/read-tags content)))))))
+
 (defn execute-filler
   "Execute a filler"
   [filler]
@@ -53,16 +60,12 @@
             parent-dst-path (str (fs/parent dst-path))]
         (if (fs/exists? src-path)
           (do
-            (println "Copying files")
-            (println "from:" src-path)
-            (println "to:" dst-path)
+            (println "-> Copying files")
+            (println "  from:" src-path)
+            (println "  to:" dst-path)
             (fs/create-dirs (fs/file parent-dst-path))
-            (fs/copy src-path dst-path {:replace-existing true :copy-attributes true} ))
-          (println "File not found to be copied:" src-path)
-          )))))
+            (fs/copy src-path dst-path {:replace-existing true :copy-attributes true})
+            (update-file-with-env-vars dst-path))
+          (println "File not found to be copied:" src-path))))))
 
-(defn update-file-with-env-vars [path]
-  (let [content (slurp path)]
-    (when (templates/exists-tags? content)
-      (println "\n-> Updating the file" path "to use environment variables")
-      (spit path (templates/replace-multiple-tags content (templates/create-tag-data utils/get-env-value (templates/read-tags content)))))))
+

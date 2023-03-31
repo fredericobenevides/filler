@@ -32,8 +32,12 @@
   "Allows to replace a string containing multiple tags. The tags should contain
    the tag name and its value. The tags should be a tag data with the
    following format: {:keys [:tags :value ]}"
-   [s tags]
+  [s tags]
   (loop [s s tags tags]
     (if (empty? tags)
       s
-      (recur (replace-tag-with-value s (:tag (first tags)) (:value (first tags))) (next tags)))))
+      (let [tag (:tag (first tags))
+            value (:value (first tags))]
+        (if (not (string/blank? value))
+          (recur (replace-tag-with-value s tag value) (next tags))
+          (recur s (next tags)))))))
