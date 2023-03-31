@@ -46,8 +46,7 @@
 (defn execute-filler
   "Execute a filler"
   [filler]
-  (let [filler-path (str (fs/expand-home (:path filler)))
-        files (:files filler)]
+  (let [files (:files filler)]
     (doseq [file files]
       (let [src-path (str (fs/expand-home (:src file)))
             dst-path (:dst file)
