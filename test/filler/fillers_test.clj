@@ -3,15 +3,13 @@
             [clojure.string :as string]
             [clojure.test :refer [deftest is testing]]
             [filler.fillers :as fillers]
+            [filler.templates :as templates]
             [filler.utils :as utils]
             [helpers]))
 
 (def filler-system-config (atom {:path "file"})) 
 
-(def filler-config-data (atom {:name "name"
-                               :description "description"
-                               :files [{:src "src.txt"
-                                        :dst "dst.txt"}]}))
+(def fillers (atom []))
 
 (def fixtures-config (atom {}))
 
@@ -22,36 +20,60 @@
     (swap! filler-system-config merge {:path fillers-dir})
     (swap! fixtures-config merge {:config-dir config-dir
                                   :config-file config-file
-                                  :fillers-dir fillers-dir})))
+                                  :fillers-dir fillers-dir}))
+  (spit (:config-file @fixtures-config) {:path (:fillers-dir @fixtures-config)}))
 
-(defn init-fixtures-fillers []
-  (spit (:config-file @fixtures-config) {:path (:fillers-dir @fixtures-config)})
+(defn init-fillers-config []
   (dotimes [n 2]
     (let [fillers-dir (:fillers-dir @fixtures-config)
-          filler-subdir (str (fs/create-dir (fs/file fillers-dir (str "sub" n))))
-          filler-config (str (fs/create-file (fs/file filler-subdir "config.edn")))]
-      (swap! filler-config-data update-in [:files 0] merge {:src (str (fs/file filler-subdir (str "src" n ".txt")))})
-      (swap! filler-config-data update-in [:files 0] merge {:dst (str (fs/file filler-subdir (str "dst" n ".txt")))})
-      (fs/create-file (:src (first (:files @filler-config-data))))
-      (spit filler-config (assoc @filler-config-data :name (str "name" n)))
-      )))
+          filler-dir (fs/file fillers-dir (str "name" n))
+          src (str (fs/file "{{filler_dir}}" "src" "file.txt"))
+          dst (str (fs/file filler-dir "dst" "file.txt"))]
+      (swap! fillers conj {:name (str "name" n)
+                           :description (str "description" n)
+                           :files [{:src src
+                                    :dst dst}]}))))
+(defn spit-fillers-config []
+  (doseq [filler @fillers]
+    (let [files (:files filler)
+          dst (:dst (first files))
+          filler-dir (str (fs/parent (fs/parent dst)))
+          config-path (str (fs/file filler-dir "config.edn"))]
+      (fs/create-dirs filler-dir)
+      (spit config-path filler))))
 
-(init-fixtures-config)
-(init-fixtures-fillers)
+(defn spit-fillers-src-file []
+  (doseq [filler @fillers]
+    (let [files (:files filler)
+          dst (:dst (first files))
+          filler-dir (str (fs/parent (fs/parent dst)))
+          file-dir-src (str (fs/file filler-dir "src"))
+          file-path (str (fs/file file-dir-src "file.txt"))]
+      (fs/create-dirs file-dir-src)
+      (spit file-path "content"))))
+
+(defn init-fixtures []
+  (init-fixtures-config)
+  (init-fillers-config)
+  (spit-fillers-config)
+  (spit-fillers-src-file))
+
+(init-fixtures)
 
 (deftest create-filler-test
-  (let [config (assoc @filler-config-data :path "file_location")
+  (let [path (str (fs/file "{{filler_dir}}" "filler_file"))
+        config (assoc (first @fillers) :path path)
         filler (fillers/create-filler config)]
-    (is (= "name" (:name filler)))
-    (is (= "description" (:description filler)))
-    (is (= "file_location" (:path filler)))
-    (is (string/includes? (:src (first (:files filler))) "src1.txt"))))
+    (is (= "name0" (:name filler)))
+    (is (= "description0" (:description filler)))
+    (is (= "{{filler_dir}}" (:path filler)))
+    (is (string/includes? (:src (first (:files filler))) "file.txt"))))
 
 (deftest find-all-fillers-config
   (let [fillers-dir (:fillers-dir @fixtures-config)
         fillers (fillers/find-all-fillers-config fillers-dir)]
     (is (= (count fillers) 2))
-    (is (every? #{"name0" "name1"} [(:name (first fillers)) (:name (second fillers))]) )))
+    (is (every? #{"name0" "name1"} [(:name (first fillers)) (:name (second fillers))]))))
 
 (deftest find-all-fillers-test
   (let [fillers-dir (:fillers-dir @fixtures-config)
@@ -62,21 +84,25 @@
         (is (filter (complement empty?) (map :path fillers)))))))
 
 (deftest find-fillers-by-name-test
-  (testing "find by valid name"
-    (let [filler (fillers/create-filler @filler-config-data)]
-      (is (fillers/find-fillers-by-name [filler] "name"))))
-  (testing "find by invalid name"
-    (let [filler (fillers/create-filler @filler-config-data)]
-      (is (not (seq (fillers/find-fillers-by-name [filler] "invalid")))))))
+  (let [config (assoc (first @fillers) :path "path")]
+    (testing "find by valid name"
+      (prn "config" config)
+      (let [filler (fillers/create-filler config)]
+        (is (fillers/find-fillers-by-name [filler] "name"))))
+    (testing "find by invalid name"
+      (let [filler (fillers/create-filler config)]
+        (is (not (seq (fillers/find-fillers-by-name [filler] "invalid"))))))))
 
 (deftest execute-filler-test
-  (let [fillers-dir (:fillers-dir @fixtures-config)
-        config-file (:config-file @fixtures-config)
-        filler-subdir0 (str (fs/file fillers-dir "sub0"))
-        filler-subdir1 (str (fs/file fillers-dir "sub1"))]
+  (let [config-file (:config-file @fixtures-config)
+        config1 (first @fillers)
+        config2 (first @fillers)
+        dst1 (:dst (first (:files config1)))
+        dst2 (:dst (first (:files config2)))
+        ]
     (with-redefs [utils/CONFIG-LOCATION config-file]
       (let [fillers (fillers/find-all-fillers)]
         (fillers/execute-filler (first fillers))
         (fillers/execute-filler (second fillers))
-        (is (fs/exists? (fs/file filler-subdir0 "dst0.txt")))
-        (is (fs/exists? (fs/file filler-subdir1 "dst1.txt")))))))
+        (is (fs/exists? dst1))
+        (is (fs/exists? dst2))))))

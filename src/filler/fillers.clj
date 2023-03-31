@@ -6,10 +6,15 @@
 (defn create-filler
   "Returns a map containing the structure of the filler"
   [{:keys [name path description files]}]
-  {:name name
-   :path path
-   :description description
-   :files files})
+  (let [path (str (fs/parent path))
+        filler {:name name
+                :path path
+                :description description}
+        files (map (fn [f]
+                     {:src (utils/create-path (:src f) "filler_dir" path)
+                      :dst (utils/create-path (:dst f)) "filler_dir" path})
+                   files)]
+    (merge filler {:files files})))
 
 (defn print-filler
   "Printns the filler data"
@@ -19,9 +24,8 @@
   (println "path:" (:path filler))
   (println "file info:")
   (doseq [file (:files filler)]
-    (let [path (:path filler)
-          src (str path fs/file-separator (:src file))
-          dst (str (fs/expand-home (:dst file)))]
+    (let [src (:src file)
+          dst (:dst file)]
       (println "  source:" src)
       (println "  destination:" dst))))
 
@@ -58,10 +62,8 @@
   [filler]
   (let [files (:files filler)]
     (doseq [file files]
-      (let [src-file-name (str (fs/file-name (:src file)))
-            src-parent-path (str (fs/parent (:src file)))
-            src-path (str (fs/file src-parent-path src-file-name))
-            dst-path (str (fs/expand-home (:dst file)))
+      (let [src-path (:src file)
+            dst-path (:dst file)
             dst-parent-path (str (fs/parent dst-path))]
         (if (fs/exists? src-path)
           (do
