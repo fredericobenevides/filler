@@ -3,7 +3,10 @@
             [filler.fillers :as fillers]
             [filler.utils :as utils]))
 
-(defn init []
+(defn init
+  "Initialize the filler in the system creating a file called file
+   $HOME/filler.edn"
+  []
   (if (not (fs/exists? utils/CONFIG-LOCATION))
     (do
       (println "# Initializing the filler in the current system")
@@ -18,33 +21,31 @@
       )
     (println "# Filler config already exists.")))
 
-(defn clear []
+(defn clear
+  "Removed the filler from the system"
+  []
   (if (fs/exists? utils/CONFIG-LOCATION)
     (do
       (println "# Removing filler from the system")
       (fs/delete utils/CONFIG-LOCATION))
     (println "# Config file does not exists")))
 
-(defn list []
-  (let [fillers (fillers/list-fillers)]
+(defn list
+  "List all the fillers in the system"
+  []
+  (let [fillers (fillers/find-all-fillers)]
     (println "# We found" (count fillers) "fillers in the system")
     (doseq [filler fillers]
       (newline)
-      (fillers/print-filler-data filler))))
+      (fillers/print-filler filler))))
 
 (defn run-filler
+  "Run the fillers based on their names"
   {:org.babashka/cli {:coerce {:names [:string]}}}
   [{names :names}]
   (doseq [name names]
-    (let [filler (fillers/load-fillers-by-name (fillers/list-fillers) name)]
+    (let [filler (fillers/find-fillers-by-name (fillers/find-all-fillers) name)]
       (newline)
-      (fillers/print-filler-data filler)
+      (fillers/print-filler filler)
       (newline)
-      (doseq [file (:files filler)]
-        (let [path (:path filler)
-              src (str path fs/file-separator (:src file))
-              dst (str (fs/expand-home (:dst file)))]
-          (println "-> Copying file \nfrom:" src "\nto:" dst)
-          (fs/copy src dst {:replace-existing true})
-          ;; (update-file-with-env-vars dst)
-          )))))
+      (fillers/execute-filler filler))))
