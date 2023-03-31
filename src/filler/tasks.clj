@@ -50,3 +50,16 @@
       (newline)
       (fillers/execute-filler filler)
       )))
+
+(defn examples
+  "Prepare the system to use the structured created in the examples folder"
+  []
+  (let [filler-config (fs/expand-home utils/CONFIG-LOCATION)]
+    (when (fs/exists? filler-config)
+      (fs/move filler-config (str filler-config ".edn"))
+      ))
+  (println "Initializing the filler using the config found in the examples folder")
+  (fs/copy "examples/filler.edn" (fs/expand-home utils/CONFIG-LOCATION) {:replace-existing true})
+  (println "Creating the fillers directory in /tmp/fillers")
+  (fs/create-dirs "/tmp/fillers")
+  (fs/copy-tree "examples/fillers" "/tmp/fillers" {:replace-existing true}))

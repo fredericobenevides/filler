@@ -1,0 +1,4 @@
+{:name "foo"
+ :description "Example of filler"
+ :files [{:src "files/example.txt"
+          :dst "/tmp/fillers/dst_files/example.txt"}]}
